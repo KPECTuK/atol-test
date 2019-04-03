@@ -1,4 +1,4 @@
-﻿#define FROM_FILE
+﻿//#define FROM_FILE
 #define FROM_RESOURCE
 
 using System;
@@ -40,7 +40,8 @@ namespace Atol.Test
 	{
 		private Node[] _set;
 
-		public int Count { get; private set; }
+		public int Nodes { get; private set; }
+		public int Links { get; private set; }
 
 		public StorageGraph()
 		{
@@ -73,7 +74,7 @@ namespace Atol.Test
 
 			// предополагается что нумерация узлов непрерывна
 			nodeIndex += 1;
-			Count = Count < nodeIndex ? nodeIndex : Count;
+			Nodes = Nodes < nodeIndex ? nodeIndex : Nodes;
 		}
 
 		//public int FindRootIndex(int nodeIndex)
@@ -123,14 +124,16 @@ namespace Atol.Test
 			{
 				++_set[leftNodeIndex].Rank;
 			}
+
+			Links++;
 		}
 
 		public bool IsGaps()
 		{
 			var index = 0;
 			var value = _set[index].Parent;
-			for(; index < Count && value == _set[index].Parent; index++) { }
-			return index < Count;
+			for(; index < Nodes && value == _set[index].Parent; index++) { }
+			return index < Nodes;
 		}
 	}
 
@@ -146,7 +149,7 @@ namespace Atol.Test
 		{
 			new TestDataSet { Filename = "test-00", Result = true },
 			new TestDataSet { Filename = "test-01", Result = false },
-			new TestDataSet { Filename = "test-02", Result = true },
+			//new TestDataSet { Filename = "test-02", Result = true },
 		};
 
 		public static StorageGraph Build(StreamReader reader)
@@ -171,7 +174,7 @@ namespace Atol.Test
 		}
 
 #if FROM_FILE
-		public static IEnumerable A_FileDataSource => _testSets.Select(_ => new TestCaseData(BuildFromFile(_.Filename)).Returns(_.Result));
+		public static IEnumerable A_FileDataSource => _testSets.Select(_ => new TestCaseData(BuildFromFile(_.Filename)).SetDescription(_.Filename).Returns(_.Result));
 
 		private static StorageGraph BuildFromFile(string filename)
 		{
@@ -192,7 +195,7 @@ namespace Atol.Test
 		}
 #endif
 #if FROM_RESOURCE
-		public static IEnumerable A_ResourcesDataSource => _testSets.Select(_ => new TestCaseData(BuildFromResource(_.Filename)).Returns(_.Result));
+		public static IEnumerable A_ResourcesDataSource => _testSets.Select(_ => new TestCaseData(BuildFromResource(_.Filename)).SetDescription(_.Filename).Returns(_.Result));
 
 		private static StorageGraph BuildFromResource(string filename)
 		{
@@ -232,7 +235,10 @@ namespace Atol.Test
 				throw new Exception("input data not found");
 			}
 
-			return !graph.IsGaps();
+			//var componentsMax = graph.Nodes - (Math.Sqrt(8d * graph.Links + 1d) - 1d) * .5;
+			var isGap = graph.IsGaps();
+			//return componentsMax == 1d || !isGap;
+			return !isGap;
 		}
 	}
 }
